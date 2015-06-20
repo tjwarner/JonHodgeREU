@@ -6,20 +6,35 @@
  * @author Selene Chew and TJ Warner
  */
 import java.util.*;
-import java.util.Map.Entry;
+
 import java.io.*;
 
 public class Graph {
 
 	public static final int MAX_SIZE = 32;
+	
 	private Integer[][] adjMatrix = new Integer[MAX_SIZE][MAX_SIZE];
 	private int numQuestions;
 	private int numRows;
-	private Spectrum spectrum = new Spectrum();
+	private Spectrum spectrum;
 	/*
 	 * The constructor
 	 * 
 	 */
+	public Graph(Graph old)
+	{
+		numQuestions = old.numQuestions;
+		numRows = old.numRows;
+		adjMatrix = new Integer[MAX_SIZE][MAX_SIZE];
+		for(int i=0; i<numRows; i++)
+		{
+			for(int j=0; j<numRows; j++)
+			{
+				adjMatrix[i][j] = old.adjMatrix[i][j];
+			}
+		}
+		spectrum = new Spectrum(numQuestions);
+	}
 	public Graph(String filename) {
 		
 		try{
@@ -63,7 +78,11 @@ public class Graph {
 			System.out.println();
 		}
 	}
-
+	
+	public int getRows()
+	{
+		return numRows;
+	}
 
 	/*
 	 * find all Hamiltonian Paths
@@ -71,19 +90,27 @@ public class Graph {
 	public void findPath() {
 		boolean[] b = new boolean[MAX_SIZE];
 		Integer[] p = new Integer[MAX_SIZE];
+		spectrum = new Spectrum(numQuestions);
 		findPath(b,p,0);
 		spectrum.normalizeMap();
 	}
 	public void findPath(boolean[] b, Integer[] path, int length) {
 		if(length == numRows) {
 			//call function to determine character
-/*			System.out.println();
-			for(int k = 0; k < numRows; k++) {
-				System.out.print(path[k] + " ");
+			
+			Character c = new Character(path, numQuestions);
+			Character target = new Character(numQuestions, 151);
+			if(c.equals(target))
+			{
+				System.out.println();
+				for(int k = 0; k < numRows; k++) {
+					System.out.print(path[k] + " ");
+				}
+				System.out.println();
 			}
-			System.out.println();
-*/			Character c = new Character(path, numQuestions);
-//			System.out.println(c.toString());
+		
+			
+	//		System.out.println(c.toString());
 			spectrum.addToRaw(c);
 			return;
 		}
@@ -104,24 +131,18 @@ public class Graph {
 	//prints the graph's spectrum to the screen. Normalized version is printed by default.
 	public void printSpectrum()
 	{
-		for(Entry<Character, Integer> entry : (spectrum.getNormal()).entrySet()) 
-		{
-			System.out.println(entry.getKey().toString() + " - " + entry.getValue());
-		}
+		spectrum.printSpectrum();
 	}
 	
 	//pass true as argument to print the un-normalized spectrum
 	public void printSpectrum(boolean wantRaw)
 	{
-		if(wantRaw)
-		{
-			for(Entry<Character, Integer> entry : (spectrum.getRaw()).entrySet()) 
-			{
-				System.out.println(entry.getKey().toString() + " - " + entry.getValue());
-			}
-		}
-		else
-			printSpectrum();
+		spectrum.printSpectrum(wantRaw);
+	}
+	
+	public void printSpectrum(boolean wantRaw, boolean wantNumberOfPaths)
+	{
+		spectrum.printSpectrum(wantRaw, wantNumberOfPaths);
 	}
 	
 	//returns the graph's character spectrum. Will be empty if findPath() has yet to be called
@@ -135,7 +156,7 @@ public class Graph {
 	//iff they are not adjacent in the original graph 
 	public Graph complement()
 	{
-		Integer[][] compAdj = new Integer[32][32];
+		Integer[][] compAdj = new Integer[MAX_SIZE][MAX_SIZE];
 		for(int i = 0; i < numRows; i++) {
 			for(int j = 0; j < numRows; j++) {
 				if(i!=j){
@@ -148,5 +169,30 @@ public class Graph {
 			}
 		}
 		return new Graph(compAdj, numQuestions);
+	}
+	
+	//Changes the current graph by adding an edge to it.
+	//precondition: i and j in bounds
+	//postcondition: spectrum set to null if the graph is changed
+	public void addEdge(int i, int j)
+	{
+		if(i!=j && adjMatrix[i][j]==0)
+		{
+			adjMatrix[i][j] = 1;
+			adjMatrix[j][i] = 1;
+			spectrum = null;
+		}
+	}
+	//Changes the current graph by adding an edge to it.
+	//precondition: i and j in bounds
+	//postcondition: spectrum set to null if the graph is changed
+	public void removeEdge(int i, int j)
+	{
+		if(i!=j && adjMatrix[i][j]==1)
+		{
+			adjMatrix[i][j] = 0;
+			adjMatrix[j][i] = 0;
+			spectrum = null;
+		}
 	}
 }

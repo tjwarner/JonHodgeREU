@@ -1,8 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.Map.Entry;
 
 
@@ -30,7 +26,12 @@ public class Spectrum {
 	public void normalizeMap()
 	{
 		int minHash=0;
-		Map<Character,Integer> temp = raw;
+		Map<Character,Integer> temp = new HashMap<Character,Integer>();
+		for (Entry<Character, Integer> entry : raw.entrySet()) 
+		{
+			temp.put(entry.getKey(), entry.getValue());
+		}
+		
 		for (Entry<Character, Integer> entry : (temp).entrySet()) 
 		{
 			if(entry.getValue()!=0)
@@ -73,6 +74,53 @@ public class Spectrum {
 	{
 		return normal;
 	}
+	
+	//returns true if this spectrum contains the character
+	//by default, assumes the argument is in "standard form"
+	public boolean contains(Character c)
+	{
+		return normal.containsKey(c);
+	}
+	
+	//
+	//
+	public void compareWith(Spectrum s)
+	{
+		Spectrum common = new Spectrum(numQuestions);
+		Spectrum spec1 = new Spectrum(numQuestions);
+		Spectrum spec2 = new Spectrum(numQuestions);
+		for(Entry<Character, Integer> entry : normal.entrySet())
+		{
+			Character c = entry.getKey();
+			Integer count = entry.getValue();
+			if(s.contains(c)) //this and s both contain c
+			{
+				common.normal.put(c, s.normal.get(c)  - count);
+			}
+			else //this contains c and s does not
+			{
+				spec1.normal.put(c,count);
+			}	
+		}
+		for(Entry<Character, Integer> entry : normal.entrySet())
+		{
+			Character c = entry.getKey();
+			Integer count = entry.getValue();
+			if(!this.contains(c)) //s contains c and this does not 
+			{
+				spec2.normal.put(c, count);
+			}
+		}
+		System.out.println("The two graphs have these characters in common, where each count is");
+		System.out.println("the difference of its appearances in each graph (second - first)");
+		common.printSpectrum();
+		System.out.println("The following characters appear in the first graph but not the second:");
+		spec1.printSpectrum();
+		System.out.println("The following characters appear in the second graph but not the first:");
+		spec2.printSpectrum();
+	}
+	
+	
 	
 	// adds a character to the raw list.
 	public void addToRaw(Character c)
@@ -118,5 +166,52 @@ public class Spectrum {
 
 		return code;
 
+	}
+	
+	//prints the graph's spectrum to the screen. 
+	//Normalized version is printed without total number of paths by default.
+	public void printSpectrum()
+	{
+		printSpectrum(false, false);
+	}
+	
+	//pass true as argument to print the un-normalized spectrum
+	public void printSpectrum(boolean wantRaw, boolean wantNumberOfPaths)
+	{
+		int count = 0;
+		Map<Character, Integer> temp;
+		String phrase;
+		if(wantRaw)
+		{
+			temp = raw;
+			phrase = " characters ";
+		}
+		else
+		{
+			temp = normal;
+			phrase = " equivalence classes ";
+		}
+		for(Entry<Character, Integer> entry : (temp).entrySet()) 
+		{
+			System.out.println(entry.getKey().toString() + " || " + entry.getValue());
+			count+=entry.getValue();
+		}
+		System.out.println(temp.size() + " total" + phrase + "found.");
+		if(wantNumberOfPaths)
+		{
+			System.out.println(count + " total paths found.");
+		}
+	}
+	
+	//pass true to print the raw spectrum.
+	//by default, number of paths not printed.
+	public void printSpectrum(boolean wantRaw)
+	{
+		printSpectrum(wantRaw, false);
+	}
+	
+	public int numberNormalized()
+	{
+		return normal.size();
 	}
 }

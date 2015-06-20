@@ -147,4 +147,5 @@ public class Character implements Comparable<Character> {
 	{
 		return hashCode() - ((Character)newC).hashCode();
 	}
+	
 }
