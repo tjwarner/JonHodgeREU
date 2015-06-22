@@ -82,6 +82,20 @@ public class Spectrum {
 		return normal.containsKey(c);
 	}
 	
+	public boolean equals(Spectrum s)
+	{
+		if(normal.size()==s.normal.size())
+		{
+			for(Character key : normal.keySet())
+			{
+				if(!s.normal.containsKey(key))
+					return false;
+			}
+			return true;
+		}
+		else return false;
+	}
+	
 	//
 	//
 	public void compareWith(Spectrum s)
