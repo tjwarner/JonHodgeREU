@@ -35,6 +35,24 @@ public class Graph {
 		}
 		spectrum = new Spectrum(numQuestions);
 	}
+	public Graph(int numQ, boolean complete)
+	{
+		numQuestions = numQ;
+		numRows = 1 << numQ;
+		int fill = 0;
+		if(complete)
+			fill = 1;
+		for(int i=0; i<numRows; i++)
+		{
+			for(int j=0; j<numRows; j++)
+			{
+				if(i==j)
+					adjMatrix[i][j] = 0;
+				else
+					adjMatrix[i][j] = fill;
+			}
+		}
+	}
 	public Graph(String filename) {
 		
 		try{
@@ -58,7 +76,17 @@ public class Graph {
 		}
 
 	}
-	
+	public Graph(Scanner sc)
+	{
+		numQuestions = sc.nextInt();
+		numRows = (1<<numQuestions);
+		spectrum = new Spectrum(numQuestions);
+		for(int i = 0; i < numRows; i++) {
+			for(int j = 0; j < numRows; j++) {
+				adjMatrix[i][j] = sc.nextInt();
+			}
+		}
+	}
 	public Graph(Integer[][] adjacency, int numQ)
 	{
 		adjMatrix = adjacency;
@@ -79,6 +107,17 @@ public class Graph {
 		}
 	}
 	
+	public void printArray(PrintStream stream)
+	{
+		for(int i = 0; i < numRows; i++) {
+			for(int j = 0; j < numRows; j++) {
+				stream.print(adjMatrix[i][j] + " ");
+			}
+			stream.println();
+		}
+	}
+	
+	
 	public int getRows()
 	{
 		return numRows;
@@ -97,9 +136,9 @@ public class Graph {
 	public void findPath(boolean[] b, Integer[] path, int length) {
 		if(length == numRows) {
 			//call function to determine character
-			
 			Character c = new Character(path, numQuestions);
-			Character target = new Character(numQuestions, 151);
+		
+		/*	Character target = new Character(numQuestions, 151);
 			if(c.equals(target))
 			{
 				System.out.println();
@@ -108,7 +147,7 @@ public class Graph {
 				}
 				System.out.println();
 			}
-		
+		*/
 			
 	//		System.out.println(c.toString());
 			spectrum.addToRaw(c);

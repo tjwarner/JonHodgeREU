@@ -1,17 +1,18 @@
-
+import java.util.*;
+import java.io.*;
 public class GraphDriver {
 	/* Main method
 	 * 
 	 * takes in a input file representing a graph and determines all possible characters
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		if(args[0]==null)
 		{
 			System.out.println("Put a file in the arguments!");
 			return;
 		}
 		Graph myGraph = new Graph(args[0]); //make graph
-		Graph oneLess = new Graph(myGraph);
+	/*	Graph oneLess = new Graph(myGraph);
 
 		oneLess.removeEdge(0, 2);
 		oneLess.removeEdge(0, 3);
@@ -39,9 +40,30 @@ public class GraphDriver {
 		compy.printArray();
 		System.out.println("===Complement===");
 		compy.printSpectrum();
-	*/
-		myGraph.getSpectrum().compareWith(oneLess.getSpectrum()); 
+	
+		myGraph.getSpectrum().compareWith(oneLess.getSpectrum()); */
+		Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		makeAllCycles(stack);
+	//	int minimum = 14;
+		PrintStream writeToFile = new PrintStream(new File("maximallyEssentialCycles.txt"));
+		for(ArrayList<Integer> i : stack)
+		{
+			Graph noCycle = new Graph(myGraph);
+			Integer[] literallyCannotBelieveThisIsNecessary = new Integer[1];
+			removeCycle((i.toArray(literallyCannotBelieveThisIsNecessary)), noCycle);
+			noCycle.findPath();
+			int numC =noCycle.getSpectrum().numberNormalized();
+			if(numC == 8)
+			{
+				writeToFile.println(i.toString());
+				noCycle.printArray(writeToFile);
+		//		noCycle.printSpectrum(false, true);
+		//		minimum = numC;
+			}
+		}
+		writeToFile.close();
 	}
+	
 	
 	//removes the given path from the graph
 	public static void removePath(Integer[] path, Graph graph)
@@ -54,8 +76,38 @@ public class GraphDriver {
 	//removes the given cycle from the graph
 	public static void removeCycle(Integer[] cycle, Graph graph)
 	{
-		graph.removeEdge(0, cycle.length-1);
+		graph.removeEdge(cycle[0], cycle[cycle.length-1]);
 		removePath(cycle, graph);
+	}
+	
+	public static void makeAllCycles(Deque<ArrayList<Integer>> stack)
+	{
+		ArrayList<Integer> path = new ArrayList<Integer>();
+		path.add(0);
+		makeAllCycles(stack, path, 1);
+		
+	}
+	
+	public static void makeAllCycles(Deque<ArrayList<Integer>> stack, ArrayList<Integer> path, int length)
+	{
+		if(path.size()==8)
+		{
+			ArrayList<Integer> temp = new ArrayList<Integer>(path);
+			stack.addLast(temp);
+			return;
+		}
+		else
+		{
+			for(Integer i=1; i<8; i++)
+			{
+				if(!path.contains(i))
+				{
+					path.add(i);
+					makeAllCycles(stack,path, length+1);
+					path.remove(i);
+				}
+			}
+		}
 	}
 	
 	
