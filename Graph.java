@@ -122,6 +122,8 @@ public class Graph {
 	{
 		return numRows;
 	}
+	
+	
 
 	/*
 	 * find all Hamiltonian Paths
@@ -137,8 +139,8 @@ public class Graph {
 		if(length == numRows) {
 			//call function to determine character
 			Character c = new Character(path, numQuestions);
-		
-		/*	Character target = new Character(numQuestions, 151);
+		/*
+			Character target = new Character(numQuestions, 0b10010111);
 			if(c.equals(target))
 			{
 				System.out.println();
@@ -233,5 +235,50 @@ public class Graph {
 			adjMatrix[j][i] = 0;
 			spectrum = null;
 		}
+	}
+	
+	public Integer[][] distanceMatrix()
+	{
+		Integer[][] dist = new Integer[MAX_SIZE][MAX_SIZE];
+		for(int i=0; i<numRows; i++)
+		{
+			for(int j=0; j<numRows; j++)
+			{
+				if(i==j)
+					dist[i][j] = 0;
+				else if(adjMatrix[i][j]==1)
+					dist[i][j] = 1;
+				else
+					dist[i][j] = numRows;
+			}
+		}
+		for(int k=0; k<numRows; k++)
+		{
+			for(int i=0; i<numRows; i++)
+			{
+				for(int j=0; j<numRows; j++)
+				{
+					if (dist[i][j] > dist[i][k] + dist[k][j])
+						dist[i][j] = dist[i][k] + dist[k][j];
+				}
+			}
+		}
+		
+		
+		return dist;
+	}
+	public Graph power(int power)
+	{
+		Graph g = new Graph(numQuestions,false);
+		Integer [][] d = this.distanceMatrix();
+		for(int i=0; i<numRows; i++){
+			for(int j=i+1; j<numRows; j++){
+				if(d[i][j]<=power)
+					g.addEdge(i, j);
+			}
+		}
+		
+		
+		return g;
 	}
 }
