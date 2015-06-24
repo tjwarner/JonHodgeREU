@@ -226,15 +226,17 @@ public class Graph {
 	}
 	//Changes the current graph by adding an edge to it.
 	//precondition: i and j in bounds
-	//postcondition: spectrum set to null if the graph is changed
-	public void removeEdge(int i, int j)
+	//postcondition: spectrum set to null and returns true if the graph is changed
+	public boolean removeEdge(int i, int j)
 	{
 		if(i!=j && adjMatrix[i][j]==1)
 		{
 			adjMatrix[i][j] = 0;
 			adjMatrix[j][i] = 0;
 			spectrum = null;
+			return true;
 		}
+		return false;
 	}
 	
 	public Integer[][] distanceMatrix()

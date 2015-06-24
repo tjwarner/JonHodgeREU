@@ -1,9 +1,15 @@
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.*;
 public class GraphDriver {
 	public static int minimum=14;
 	public static int maximum=0;
-	
+	public static int count=0;
+	public static int exception=0;
+	public static PrintStream writeToFile;
+	public static PrintStream forbiddenGraphs;
+	public static Scanner sc;
+	public static final int TO_REMOVE = 9;
 	/* Main method
 	 * 
 	 * takes in a input file representing a graph and determines all possible characters
@@ -15,13 +21,11 @@ public class GraphDriver {
 			System.out.println("Put a file in the arguments!");
 			return;
 		}
-		Graph myGraph = new Graph(args[0]); //make graph
-		myGraph = myGraph.power(1);
-		myGraph.printArray();
+
+		bruteForce();
 		
-		
-		
-		
+		String timeStamp = new SimpleDateFormat("MM dd, yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+		System.out.println(timeStamp);
 	/*	Graph oneLess = new Graph(myGraph);
 
 		oneLess.removeEdge(0, 2);
@@ -80,6 +84,115 @@ public class GraphDriver {
 	//	}
 //		writeToFile.close();
 		
+	}
+	
+	public static void pathPowers()
+	{
+		Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		makeAllCycles(stack);
+		Integer[] literally = new Integer[8];
+		int max = -1;
+		int min = 15;
+		for(ArrayList<Integer> path : stack)
+		{
+			Graph myGraph = new Graph(3, false); //make graph
+			addPath((path.toArray(literally)), myGraph);
+			int power = 0;
+			int prev = 0;
+			for(int i=1; i<8 && prev!=14; i++)
+			{
+				Graph temp = myGraph.power(i);
+				temp.findPath();
+				prev = temp.getSpectrum().numberNormalized();
+				power = i;
+			}
+			if(power>=max)
+			{
+				max = power;
+				System.out.println(max);
+				System.out.println(path.toString());
+			}
+			if(power<=min)
+			{
+				min = power;
+				System.out.println(min);
+				System.out.println(path.toString());
+			}
+		}
+	}
+	
+	public static void bruteForce() throws FileNotFoundException
+	{
+		try
+		{
+			File in = new File((TO_REMOVE-1)+"edgesRemoved.txt");
+			sc = new Scanner(in);
+			writeToFile = new PrintStream(new File(TO_REMOVE+"edgesRemoved.txt"));
+			forbiddenGraphs = new PrintStream(new File(TO_REMOVE+"edgeRemovalRejects.txt"));
+			while(sc.hasNext())
+			{
+				Graph g = new Graph(sc);
+				int oldRow = sc.nextInt();
+				int oldColumn = sc.nextInt();
+				bruteForce(g, TO_REMOVE-1, oldRow, oldColumn);
+			}
+			System.out.println(count+" total accepted.");
+			System.out.println(exception+" total excluded.");
+		}
+		catch (FileNotFoundException e)
+		{
+			try 
+			{
+				writeToFile = new PrintStream(new File(TO_REMOVE+"edgesRemoved.txt"));
+				forbiddenGraphs = new PrintStream(new File(TO_REMOVE+"edgeRemovalRejects.txt"));
+				Graph g = new Graph(3,true);
+				bruteForce(g, 0, 0, 0);
+				System.out.println(count+" total found.");
+			} catch (FileNotFoundException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	public static void bruteForce(Graph g, int edgesMissing, int prevRow, int prevColumn)
+	{
+		if(edgesMissing == TO_REMOVE)
+		{
+			g.findPath();
+			if(g.getSpectrum().numberNormalized() == 14)
+			{
+				writeToFile.println(3);
+				g.printArray(writeToFile);
+				writeToFile.print(prevRow + " ");
+				writeToFile.println(prevColumn);
+				++count;
+				if(count%100==0)
+					System.out.println(count+" accepted so far.");
+				
+			}
+			else
+			{
+				++exception;
+				forbiddenGraphs.println(3);
+				g.printArray(forbiddenGraphs);
+				if(exception%100==0)
+					System.out.println(exception+" thrown out so far.");
+			}
+		}
+		else
+		{
+			for(int i = prevRow; i<8; i++)
+			{	
+				for(int j = (i==prevRow) ? prevColumn+1 : i+1; j<8; j++)
+				{
+					if(g.removeEdge(i, j))
+					{
+						bruteForce(g, edgesMissing+1, i, j);
+						g.addEdge(i, j);
+					}
+				}
+			}
+		}
 	}
 	
 	public static void addPath(Integer[] path, Graph graph)
@@ -167,12 +280,12 @@ public class GraphDriver {
 	public static void makeAllCubics(Integer[] cycle)
 	{
 		Integer[] kind1 = {0,6,1,7,2,4,3,5};
-		Integer[] kind2 = {0,6,1,3,2,5,4,7}; //kind2==kind3 kinda
+	//	Integer[] kind2 = {0,6,1,3,2,5,4,7}; //kind2==kind3 kinda
 		Integer[] kind3 = {0,4,1,7,2,6,3,5};
 		Integer[] kind4 = {0,6,1,4,2,5,3,7};
 		Integer[] kind5 = {0,5,1,4,2,7,3,6};
 		Integer[] kind6 = {0,4,1,5,2,6,3,7}; //kind6==kind7 kinda
-		Integer[] kind7 = {0,4,1,6,2,5,3,7};
+	//	Integer[] kind7 = {0,4,1,6,2,5,3,7};
 		cubicOfAKind(cycle, kind1, 4);
 	//	cubicOfAKind(cycle, kind2, 8);
 		cubicOfAKind(cycle, kind3, 4);
