@@ -126,14 +126,16 @@ public class Graph {
 	
 
 	/*
-	 * find all Hamiltonian Paths
+	 * find all Hamiltonian Paths and adds their characters to this graph's spectrum
+	 * returns true if any path is found
 	 */
-	public void findPath() {
+	public boolean findPath() {
 		boolean[] b = new boolean[MAX_SIZE];
 		Integer[] p = new Integer[MAX_SIZE];
 		spectrum = new Spectrum(numQuestions);
 		findPath(b,p,0);
 		spectrum.normalizeMap();
+		return spectrum.numberNormalized() > 0;
 	}
 	public void findPath(boolean[] b, Integer[] path, int length) {
 		if(length == numRows) {
@@ -214,15 +216,17 @@ public class Graph {
 	
 	//Changes the current graph by adding an edge to it.
 	//precondition: i and j in bounds
-	//postcondition: spectrum set to null if the graph is changed
-	public void addEdge(int i, int j)
+	//postcondition: spectrum set to null and return true if the graph is changed
+	public boolean addEdge(int i, int j)
 	{
 		if(i!=j && adjMatrix[i][j]==0)
 		{
 			adjMatrix[i][j] = 1;
 			adjMatrix[j][i] = 1;
 			spectrum = null;
+			return true;
 		}
+		return false;
 	}
 	//Changes the current graph by adding an edge to it.
 	//precondition: i and j in bounds
@@ -265,8 +269,6 @@ public class Graph {
 				}
 			}
 		}
-		
-		
 		return dist;
 	}
 	public Graph power(int power)
@@ -279,8 +281,10 @@ public class Graph {
 					g.addEdge(i, j);
 			}
 		}
-		
-		
 		return g;
+	}
+	public boolean isAdjacentTo(int i, int j)
+	{
+		return adjMatrix[i][j]==1;
 	}
 }

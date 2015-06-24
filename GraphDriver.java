@@ -9,53 +9,18 @@ public class GraphDriver {
 	public static PrintStream writeToFile;
 	public static PrintStream forbiddenGraphs;
 	public static Scanner sc;
-	public static final int TO_REMOVE = 9;
+	public static final int TO_REMOVE = 4;
+	public static int[] spectrumSize = new int[15];
 	/* Main method
 	 * 
 	 * takes in a input file representing a graph and determines all possible characters
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		
-		if(args[0]==null)
-		{
-			System.out.println("Put a file in the arguments!");
-			return;
-		}
-
-		bruteForce();
+		bruteForceAdd(11);
 		
 		String timeStamp = new SimpleDateFormat("MM dd, yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
 		System.out.println(timeStamp);
-	/*	Graph oneLess = new Graph(myGraph);
-
-		oneLess.removeEdge(0, 2);
-		oneLess.removeEdge(0, 3);
-		oneLess.removeEdge(0, 4);
-		oneLess.removeEdge(0, 5);
-		oneLess.removeEdge(0, 6);
-		oneLess.removeEdge(0, 7);
-		myGraph.printArray(); //print graph
-		
-		myGraph.findPath(); //construct spectrum
-		
-		
-		System.out.println("===Graph 1===");
-		myGraph.printSpectrum(false, true);
-		System.out.println();
-		
-		oneLess.printArray();
-		oneLess.findPath();
-		System.out.println("===Graph 2===");
-		oneLess.printSpectrum(false, true);
-		System.out.println();
-	/*
-		Graph compy = myGraph.complement();
-		compy.findPath();
-		compy.printArray();
-		System.out.println("===Complement===");
-		compy.printSpectrum();
 	
-		myGraph.getSpectrum().compareWith(oneLess.getSpectrum()); */
 	//	Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
 	//	makeAllCycles(stack);
 	//	int minimum = 14;
@@ -147,7 +112,8 @@ public class GraphDriver {
 				forbiddenGraphs = new PrintStream(new File(TO_REMOVE+"edgeRemovalRejects.txt"));
 				Graph g = new Graph(3,true);
 				bruteForce(g, 0, 0, 0);
-				System.out.println(count+" total found.");
+				System.out.println(count+" total accepted.");
+				System.out.println(exception+" total excluded.");
 			} catch (FileNotFoundException ex) {
 				ex.printStackTrace();
 			}
@@ -168,7 +134,6 @@ public class GraphDriver {
 				++count;
 				if(count%100==0)
 					System.out.println(count+" accepted so far.");
-				
 			}
 			else
 			{
@@ -273,8 +238,6 @@ public class GraphDriver {
 			}
 			makeAllCubics(cycle);
 		}
-		
-		
 		sc.close();
 	}
 	public static void makeAllCubics(Integer[] cycle)
@@ -314,4 +277,77 @@ public class GraphDriver {
 		g.findPath();
 		
 	}
+
+	public static void bruteForceAdd(int toAdd) throws FileNotFoundException
+	{
+		String partial = "edgesPartialSpectrum.txt";
+		String full = "edgesFullSpectrum.txt";
+		try 
+		{
+			writeToFile = new PrintStream(new File(toAdd+full));
+			forbiddenGraphs = new PrintStream(new File(toAdd+partial));
+			Graph g = new Graph(3,false);
+			bruteForceAdd(g, 0, 0, 0, toAdd);
+			System.out.println(count+" graphs with full spectrum.");
+			System.out.println(exception+" graphs with partial non-empty spectrum.");
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+		}
+		
+		System.out.println(Arrays.toString(spectrumSize));
+	}
+
+	public static void bruteForceAdd(Graph g, int edges, int prevRow, int prevColumn, int toAdd)
+	{
+		if(edges == toAdd)
+		{
+			if(g.findPath())
+			{
+				int mySize = g.getSpectrum().numberNormalized();
+				++spectrumSize[mySize];
+				if(mySize == 14)
+				{
+					writeToFile.println(3);
+					g.printArray(writeToFile);
+					++count;
+					System.out.println(count+" full so far. WE DID IT!");
+				}
+				else
+				{
+					++exception;
+					forbiddenGraphs.println(3);
+					g.printArray(forbiddenGraphs);
+					if(exception%10000==0)
+						System.out.println(exception+" partial so far.");
+				}
+			}
+		}
+		else
+		{
+			for(int i = prevRow; i<8; i++)
+			{	
+				for(int j = (i==prevRow) ? prevColumn+1 : i+1; j<8; j++)
+				{
+					if(g.addEdge(i, j))
+					{
+						bruteForceAdd(g, edges+1, i, j, toAdd);
+						g.removeEdge(i, j);
+					}
+				}
+			}
+		}
+	}
+	
+
+
+
+
+
+
+
+
+
+
+
+
 }
