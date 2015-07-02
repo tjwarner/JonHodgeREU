@@ -116,7 +116,7 @@ public class Spectrum {
 				spec1.normal.put(c,count);
 			}	
 		}
-		for(Entry<Character, Integer> entry : normal.entrySet())
+		for(Entry<Character, Integer> entry : s.normal.entrySet())
 		{
 			Character c = entry.getKey();
 			Integer count = entry.getValue();

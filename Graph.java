@@ -142,7 +142,7 @@ public class Graph {
 			//call function to determine character
 			Character c = new Character(path, numQuestions);
 		/*
-			Character target = new Character(numQuestions, 0b10010111);
+			Character target = new Character(numQuestions, 151);
 			if(c.equals(target))
 			{
 				System.out.println();
@@ -153,7 +153,8 @@ public class Graph {
 			}
 		*/
 			
-	//		System.out.println(c.toString());
+	//		System.out.println(c.toString() + " || " + Arrays.toString(path));
+		
 			spectrum.addToRaw(c);
 			return;
 		}
@@ -287,4 +288,20 @@ public class Graph {
 	{
 		return adjMatrix[i][j]==1;
 	}
+	
+	public boolean isSubgraphOf(Graph g)
+	{
+		for(int row = 0; row<numRows; row++)
+		{
+			for(int col = row+1; col<numRows; col++)
+			{
+				if((adjMatrix[row][col]==1) && (g.adjMatrix[row][col]==0))
+					return false;
+			}
+		}
+		return true;
+	}
+	
+	
+	
 }

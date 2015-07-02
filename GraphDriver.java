@@ -1,6 +1,7 @@
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.*;
+import java.util.Map.Entry;
 public class GraphDriver {
 	public static int minimum=14;
 	public static int maximum=0;
@@ -16,40 +17,145 @@ public class GraphDriver {
 	 * takes in a input file representing a graph and determines all possible characters
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		bruteForceAdd(11);
-		
+		/*Graph g = new Graph(3, true);
+		g.removeEdge(0b000, 0b011);
+		g.removeEdge(0b001, 0b010);
+		g.removeEdge(0b100, 0b111);
+		g.removeEdge(0b101, 0b110);
+		g.findPath();
+		g.getSpectrum().compareWith(complete.getSpectrum());
+		complete.getSpectrum().compareWith(g.getSpectrum());
 		String timeStamp = new SimpleDateFormat("MM dd, yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
 		System.out.println(timeStamp);
-	
-	//	Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
-	//	makeAllCycles(stack);
-	//	int minimum = 14;
-	//	PrintStream writeToFile = new PrintStream(new File("inessentials.txt"));
-	//	for(ArrayList<Integer> i : stack)
-	//	{
-			
-		//	Graph noCycle = new Graph(myGraph);
-		//	Integer[] literally = new Integer[8];
-		//	makeAllCubics(i.toArray(literally));
-		/*	removeCycle((i.toArray(literallyCannotBelieveThisIsNecessary)), noCycle);
-			noCycle.findPath();
-			int numC =noCycle.getSpectrum().numberNormalized();
-			if(numC == 14)
-			{
-				for(int j=0; j<8; j++)
-				{
-					writeToFile.print(i.get(j) + " ");
-				}
-				writeToFile.println();
-		//		writeToFile.println(3);
-		//		noCycle.printArray(writeToFile);
-		//		noCycle.printSpectrum(false, true);
-		//		minimum = numC;
-			}*/
-	//	}
-//		writeToFile.close();
-		
+	*/
+		Graph complete = new Graph(3,true);
+		complete.findPath();
+		sc = new Scanner(new File("4edgeUniqueRejects.txt"));
+		Graph ignore = new Graph(sc);
+		Graph g = new Graph(sc);
+		g.findPath();
+		g.printSpectrum();
+		g.printArray();
+		g.getSpectrum().compareWith(complete.getSpectrum());
 	}
+	
+	public static void combRejects(int edgeNum)
+	{
+		String name = "edgeRemovalRejects.txt";
+		String newName = "edgeUniqueRejects.txt";
+		try 
+		{
+			writeToFile = new PrintStream(new File(edgeNum + newName));
+			File in = new File((edgeNum-1) + name);
+			sc = new Scanner(in);
+			ArrayList<Graph> rejects = new ArrayList<Graph>();
+			while(sc.hasNext())
+			{
+				Graph reject = new Graph(sc);
+				rejects.add(reject);
+			}
+			sc.close();
+			File in2 = new File(edgeNum + name);
+			sc = new Scanner(in2);
+			
+			while(sc.hasNext())
+			{
+				Graph toCheck = new Graph(sc);
+				boolean isSub = false;
+				for(int i=0; i<rejects.size() && !isSub ; i++)
+				{
+					isSub = toCheck.isSubgraphOf(rejects.get(i));
+				}
+				if(!isSub)
+				{
+					writeToFile.println(3);
+					toCheck.printArray(writeToFile);
+					++count;
+				}
+			}
+			sc.close();
+			
+			System.out.println(count+" uniquely "+edgeNum+" edge rejects");
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public static void testPrefix(String prefix)
+	{
+		Integer[] path = new Integer[8];
+		Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		ArrayList<Integer> p = new ArrayList<Integer>();
+		
+		
+		for(int i=0; i<prefix.length(); i++)
+		{
+			p.add(java.lang.Character.getNumericValue(prefix.charAt(i)));
+		}
+		
+		makeAllCycles(stack, p,prefix.length());
+		Spectrum s = new Spectrum(3);
+		for(ArrayList<Integer> perm : stack)
+		{
+			Character c = new Character(perm.toArray(path),3);
+			if(c.hashCode()==0b11010101)
+				System.out.println(Arrays.toString(perm.toArray(path)));
+			s.addToRaw(c);
+		}
+		s.normalizeMap();
+	//	s.printSpectrum(true);
+	}
+	
+	public static void weightEdge()
+	{
+		Integer[] path = new Integer[8];
+		Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		ArrayList<Integer> p = new ArrayList<Integer>();
+		makeAllCycles(stack, p,0);
+		Map<String, Spectrum> mappy = new TreeMap<String, Spectrum>();
+		
+		for(ArrayList<Integer> perm : stack)
+			{
+				Character c = new Character(perm.toArray(path),3);
+				String w = getWeight(path);
+				if(w.indexOf('3')>=0 && (w.indexOf('3') < 2 || w.lastIndexOf('3') > 4))
+					w = "starts with 3";
+				else
+					w = "does not start with 3";
+				if(!mappy.containsKey(w))
+				{
+					Spectrum s = new Spectrum(3);
+					s.addToRaw(c);
+					mappy.put(w, s);
+				}
+				else
+				{
+					mappy.get(w).addToRaw(c);
+				}				
+			}
+		//yay, mappy is whole!
+		for(Entry<String, Spectrum> entry : mappy.entrySet())
+		{
+			entry.getValue().normalizeMap();
+			System.out.println(entry.getKey()+": ");
+			entry.getValue().printSpectrum();
+		}
+	}
+	public static String getWeight(Integer[] path)
+	{
+		String weight = "";
+		for(int i=0; i<7; ++i)
+		{
+			weight += Integer.bitCount(((int)path[i]) ^ ((int)path[i+1]));
+		}
+		return weight;
+	}
+	
+	
+	
+	
+	
+	
 	
 	public static void pathPowers()
 	{
@@ -86,6 +192,7 @@ public class GraphDriver {
 		}
 	}
 	
+		
 	public static void bruteForce() throws FileNotFoundException
 	{
 		try
@@ -213,7 +320,7 @@ public class GraphDriver {
 		}
 		else
 		{
-			for(Integer i=1; i<8; i++)
+			for(Integer i=0; i<8; i++)
 			{
 				if(!path.contains(i))
 				{
@@ -309,6 +416,7 @@ public class GraphDriver {
 				{
 					writeToFile.println(3);
 					g.printArray(writeToFile);
+				
 					++count;
 					System.out.println(count+" full so far. WE DID IT!");
 				}
@@ -319,6 +427,10 @@ public class GraphDriver {
 					g.printArray(forbiddenGraphs);
 					if(exception%10000==0)
 						System.out.println(exception+" partial so far.");
+					if(mySize==1){
+						g.printArray();
+						System.out.println();
+					}
 				}
 			}
 		}
@@ -338,16 +450,132 @@ public class GraphDriver {
 		}
 	}
 	
-
-
-
-
-
-
-
-
-
-
-
-
+	public static void bruteForceAddClever(int toAdd)
+	{
+		String partial = "edgesWithFragile.txt";
+		String full = "edgesWithFragileFULL.txt";
+		try 
+		{
+			writeToFile = new PrintStream(new File(toAdd+full));
+			forbiddenGraphs = new PrintStream(new File(toAdd+partial));
+			Graph g = new Graph(3,false);
+			Integer[] path = {7,6,5,3,1,2,4,0};
+			addPath(path, g);
+			bruteForceAdd(g, 7, 0, 0, toAdd);
+			System.out.println(count+" graphs with full spectrum.");
+			System.out.println(exception+" graphs with partial non-empty spectrum.");
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+		}
+		
+		System.out.println(Arrays.toString(spectrumSize));
+	}
+	public static void scratchPaper(String s)
+	{
+/*		Integer[] path = {7,6,3,5,1,2,4,0};
+		Character c = new Character(path, 3);
+		System.out.println(c.toString());
+		Integer[] path2 = {7,6,5,4,0,1,2,3};
+		Character c2 = new Character(path2, 3);
+		System.out.println(c2.toString());*/
+	/*	Integer[] path2 = {0b11111,
+						   0b11110,
+						   0b11101,
+						   0b11011,
+						   0b10111,
+						   0b01111,
+						   0b11100,
+						   0b11010,
+						   0b11001,
+						   0b10110,
+						   0b10101,
+						   0b10011,
+						   0b01110,
+						   0b01101,
+						   0b01011,
+						   0b00111,
+						   0b11000,
+						   0b10100,
+						   0b10010,
+						   0b10001,
+						   0b01100,
+						   0b01010,
+						   0b01001,
+						   0b00110,
+						   0b00101,
+						   0b00011,
+						   0b00001,
+						   0b00010,
+						   0b00100,
+						   0b01000,
+						   0b10000,
+						   0b00000};
+	
+	
+	
+		Character c2 = new Character(path2,5);
+		System.out.println(c2.toString());
+		*/
+		
+		//	Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		//	makeAllCycles(stack);
+		//	int minimum = 14;
+		//	PrintStream writeToFile = new PrintStream(new File("inessentials.txt"));
+		//	for(ArrayList<Integer> i : stack)
+		//	{
+				
+			//	Graph noCycle = new Graph(myGraph);
+			//	Integer[] literally = new Integer[8];
+			//	makeAllCubics(i.toArray(literally));
+			/*	removeCycle((i.toArray(literallyCannotBelieveThisIsNecessary)), noCycle);
+				noCycle.findPath();
+				int numC =noCycle.getSpectrum().numberNormalized();
+				if(numC == 14)
+				{
+					for(int j=0; j<8; j++)
+					{
+						writeToFile.print(i.get(j) + " ");
+					}
+					writeToFile.println();
+			//		writeToFile.println(3);
+			//		noCycle.printArray(writeToFile);
+			//		noCycle.printSpectrum(false, true);
+			//		minimum = numC;
+				}*/
+		//	}
+//			writeToFile.close();
+		/*
+		Graph thirteen = new Graph(s);
+		thirteen.findPath();
+		Graph other = new Graph(thirteen);
+		other.removeEdge(2, 3);
+		other.findPath();
+		other.getSpectrum().compareWith(thirteen.getSpectrum());
+		Graph complete = new Graph(3,true);
+		complete.findPath();
+		complete.printSpectrum();
+		*/
+		
+		testPrefix("75");
+		testPrefix("74");
+		testPrefix("765");
+		testPrefix("764");
+		testPrefix("715");
+		testPrefix("714");
+		testPrefix("7614");
+		testPrefix("7615");
+		testPrefix("7604");
+		testPrefix("7605");
+		testPrefix("7105");
+		testPrefix("7104");
+		testPrefix("76104");
+		testPrefix("76105");
+		testPrefix("76014");
+		testPrefix("76015");
+		testPrefix("71604");
+		testPrefix("71605");
+		testPrefix("71065");
+		testPrefix("71064");
+	}
+	
 }
