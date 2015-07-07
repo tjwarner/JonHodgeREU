@@ -18,8 +18,11 @@ public class Spectrum {
 		numQuestions = numQ;
 	}
 	
-	public Spectrum() 
+	public Spectrum(int numQ, Map<Character,Integer> normalIn) 
 	{
+		numQuestions = numQ;
+		normal = normalIn;
+		raw = null;
 	}
 
 	// Updates the normalized list to match the current raw list.
@@ -57,8 +60,10 @@ public class Spectrum {
 				}
 				Character n = new Character(numQuestions,minHash);
 				normal.put(n, temp.get(entry.getKey()));
+			
 			}
 		}
+	
 	}
 	
 	// returns a map of the raw, unordered set of characters as keys,
@@ -82,19 +87,34 @@ public class Spectrum {
 		return normal.containsKey(c);
 	}
 	
+	public int getCount(Character c)
+	{
+		if(!normal.containsKey(c))
+			return 0;
+		else
+			return normal.get(c);
+	}
+	
 	public boolean equals(Spectrum s)
 	{
-		if(normal.size()==s.normal.size())
+		return normal.keySet().equals(s.normal.keySet());
+		
+/*		if(normal.size()==s.normal.size())
 		{
 			for(Character key : normal.keySet())
 			{
 				if(!s.normal.containsKey(key))
+				{
+					System.out.println("what the hey");
 					return false;
+				}
 			}
+			System.out.println("whats goin on");
 			return true;
 		}
-		else return false;
-	}
+		System.out.println("wrong size");
+		return false;
+*/	}
 	
 	//
 	//
@@ -227,5 +247,28 @@ public class Spectrum {
 	public int numberNormalized()
 	{
 		return normal.size();
+	}
+	
+	public int hashCode()
+	{
+		System.out.println(normal.keySet().hashCode());
+		return normal.keySet().hashCode();
+	}
+	public void isMissing(Spectrum complete)
+	{
+		Spectrum missing = new Spectrum(numQuestions);
+		for(Entry<Character, Integer> entry : complete.getNormal().entrySet())
+		{
+			Character c = entry.getKey();
+			Integer count = entry.getValue();
+			if(!contains(c))
+			{
+				missing.getNormal().put(c,count);
+			}	
+		}
+		
+		missing.printSpectrum();
+		
+		
 	}
 }

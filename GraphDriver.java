@@ -2,6 +2,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.*;
 import java.util.Map.Entry;
+
 public class GraphDriver {
 	public static int minimum=14;
 	public static int maximum=0;
@@ -25,39 +26,154 @@ public class GraphDriver {
 		g.findPath();
 		g.getSpectrum().compareWith(complete.getSpectrum());
 		complete.getSpectrum().compareWith(g.getSpectrum());
+		
+	*/
+		classifyUniques(5);
+		
+		
 		String timeStamp = new SimpleDateFormat("MM dd, yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
 		System.out.println(timeStamp);
-	*/
-		Graph complete = new Graph(3,true);
-		complete.findPath();
-		sc = new Scanner(new File("4edgeUniqueRejects.txt"));
-		Graph ignore = new Graph(sc);
-		Graph g = new Graph(sc);
-		g.findPath();
-		g.printSpectrum();
-		g.printArray();
-		g.getSpectrum().compareWith(complete.getSpectrum());
+		
 	}
 	
-	public static void combRejects(int edgeNum)
+	public static void classifyUniques(int k)
 	{
-		String name = "edgeRemovalRejects.txt";
-		String newName = "edgeUniqueRejects.txt";
-		try 
-		{
-			writeToFile = new PrintStream(new File(edgeNum + newName));
-			File in = new File((edgeNum-1) + name);
+		Map<Map<Character,Integer>, Graph> spectra = new HashMap<Map<Character,Integer>,Graph>();
+		Map<Map<Character,Integer>, Integer> specCount = new HashMap<Map<Character,Integer>,Integer>();
+		Graph completeGraph = new Graph(3,true);
+		completeGraph.findPath();
+		Spectrum complete = completeGraph.getSpectrum();
+		
+		File in = new File(k + "edgeUniqueRejects.txt");
+		try {
 			sc = new Scanner(in);
-			ArrayList<Graph> rejects = new ArrayList<Graph>();
+		} catch (FileNotFoundException e) {
+		
+			e.printStackTrace();
+		}
+		while(sc.hasNext())
+		{
+			Graph reject = new Graph(sc);
+			reject.findPath();
+			Map<Character,Integer> rejectSpec = reject.getSpectrum().getNormal();
+			if(spectra.containsKey(rejectSpec))
+			{
+				specCount.put(rejectSpec, specCount.get(rejectSpec)+1);
+			}
+			else
+			{
+				spectra.put(rejectSpec, reject);
+				specCount.put(rejectSpec, 1);
+			}
+			
+		}
+		sc.close();
+		for(Map<Character,Integer> key : spectra.keySet())
+		{
+			System.out.println(specCount.get(key));
+			spectra.get(key).printArray();
+			Spectrum keySpec = new Spectrum(3,key);
+			keySpec.isMissing(complete);
+			System.out.println();
+		}
+	}
+	
+	
+	public static void findProblem(Graph g)
+	{
+		Graph complete = new Graph(3,true);
+		complete.findPath();
+		
+		for(int k=3; k<15; ++k)
+		{
+			File in = new File(k + "edgeUniqueRejects.txt");
+			try {
+				sc = new Scanner(in);
+			} catch (FileNotFoundException e) {
+		
+				e.printStackTrace();
+			}
 			while(sc.hasNext())
 			{
 				Graph reject = new Graph(sc);
-				rejects.add(reject);
+				if(g.isSubgraphOf(reject))
+				{
+					System.out.println(k);
+					reject.printArray();
+					if(k<=16)
+					{
+						reject.findPath();
+						reject.isMissing(complete);
+					}
+				}
 			}
 			sc.close();
+		}
+	}
+	
+	public static void checkForCommon()
+	{
+		Deque<ArrayList<Integer>> stack = new ArrayDeque<ArrayList<Integer>>();
+		makeAllCycles(stack);
+		Integer[] path = new Integer[8];
+		Character c = new Character(3,129);
+		for(ArrayList<Integer> cycle : stack)
+		{
+			Graph cycleGraph = new Graph(3,false);
+			addCycle(cycle.toArray(path), cycleGraph);
+			cycleGraph.findPath();
+			if(cycleGraph.getSpectrum().getCount(c)==6)
+			{
+				for(int i=0;i<8;i++)
+				{
+					System.out.print(cycle.get(i) + " ");
+				}
+				System.out.println();
+			}
+		}
+		
+		
+	}
+
+	public static void combRejects(int edgeNum, boolean goFast)
+	{
+		String name = "edgeRemovalRejects.txt";
+		String newName = "edgeUniqueRejects.txt";
+
+		try 
+		{
+			writeToFile = new PrintStream(new File(edgeNum + newName));
+			ArrayList<Graph> rejects = new ArrayList<Graph>();
+
+			if(goFast)
+			{
+				for(int k=3; k<edgeNum; ++k)
+				{
+					File in = new File(k + newName);
+					sc = new Scanner(in);
+					while(sc.hasNext())
+					{
+						Graph reject = new Graph(sc);
+						rejects.add(reject);
+					}
+					sc.close();
+				}
+				System.out.println("Done loading.");
+			}
+			else
+			{
+				File in = new File((edgeNum-1) + name);
+				sc = new Scanner(in);
+				while(sc.hasNext())
+				{
+					Graph reject = new Graph(sc);
+					rejects.add(reject);
+				}
+				sc.close();
+			}
 			File in2 = new File(edgeNum + name);
 			sc = new Scanner(in2);
-			
+
 			while(sc.hasNext())
 			{
 				Graph toCheck = new Graph(sc);
@@ -74,13 +190,14 @@ public class GraphDriver {
 				}
 			}
 			sc.close();
-			
+
 			System.out.println(count+" uniquely "+edgeNum+" edge rejects");
 		} catch (FileNotFoundException ex) {
 			ex.printStackTrace();
 		}
+
 	}
-	
+
 	public static void testPrefix(String prefix)
 	{
 		Integer[] path = new Integer[8];
@@ -297,17 +414,7 @@ public class GraphDriver {
 	public static void makeAllCycles(Deque<ArrayList<Integer>> stack)
 	{
 		ArrayList<Integer> path = new ArrayList<Integer>();
-		path.add(0);
-		path.add(1);
-		makeAllCycles(stack, path, 2);
-		path.clear();
-		path.add(0);
-		path.add(3);
-		makeAllCycles(stack,path,2);
-		path.clear();
-		path.add(0);
-		path.add(7);
-		makeAllCycles(stack,path,2);
+		makeAllCycles(stack,path,0);
 	}
 	
 	public static void makeAllCycles(Deque<ArrayList<Integer>> stack, ArrayList<Integer> path, int length)

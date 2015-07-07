@@ -93,8 +93,9 @@ public class Character implements Comparable<Character> {
 			for(int i=1; i<numVertices-1; i++)
 			{
 				if(isSep[i]!=((Character)o).isSep[i])
-				{
+				{	
 					return false;
+				
 				}
 			}
 			return true;

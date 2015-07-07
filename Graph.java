@@ -6,7 +6,7 @@
  * @author Selene Chew and TJ Warner
  */
 import java.util.*;
-
+import java.util.Map.Entry;
 import java.io.*;
 
 public class Graph {
@@ -150,8 +150,8 @@ public class Graph {
 					System.out.print(path[k] + " ");
 				}
 				System.out.println();
-			}
-		*/
+			}*/
+		
 			
 	//		System.out.println(c.toString() + " || " + Arrays.toString(path));
 		
@@ -303,5 +303,8 @@ public class Graph {
 	}
 	
 	
-	
+	public void isMissing(Graph complete)
+	{
+		spectrum.isMissing(complete.getSpectrum());
+	}
 }
