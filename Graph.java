@@ -6,7 +6,6 @@
  * @author Selene Chew and TJ Warner
  */
 import java.util.*;
-import java.util.Map.Entry;
 import java.io.*;
 
 public class Graph {
@@ -87,6 +86,10 @@ public class Graph {
 			}
 		}
 	}
+	
+
+	
+	
 	public Graph(Integer[][] adjacency, int numQ)
 	{
 		adjMatrix = adjacency;
@@ -307,4 +310,44 @@ public class Graph {
 	{
 		spectrum.isMissing(complete.getSpectrum());
 	}
+	
+	public void toFile(DataOutputStream d)
+	{
+		for(int i=0;i<numRows;i++)
+		{
+			byte myByte=0; 
+			for(int j=0; j<numRows; j++)
+			{
+				myByte += (adjMatrix[i][j] << j);
+			}
+			try {
+				d.write(myByte);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public Graph(int numQ, DataInputStream d) 
+	{
+		numQuestions = numQ;
+		numRows = 1 << numQ;
+		for(int i=0;i<numRows;i++)
+		{
+			byte myByte=0;
+			try {
+				myByte = d.readByte();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			for(int j=0; j<numRows; j++)
+			{
+				adjMatrix[i][j] = (myByte >> j) & 1;
+			}
+		}
+	}
+	
+	
 }

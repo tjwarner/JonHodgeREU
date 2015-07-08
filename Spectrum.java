@@ -18,14 +18,53 @@ public class Spectrum {
 		numQuestions = numQ;
 	}
 	
+	public Spectrum(int numQ, Scanner sc)
+	{
+		numQuestions = numQ;
+		int size = sc.nextInt();
+		for(int i=0; i<size; i++)
+		{
+			Character c = new Character(numQ, sc.nextInt());
+			normal.put(c, sc.nextInt());
+		}
+		
+		
+	}
+	
 	public Spectrum(int numQ, Map<Character,Integer> normalIn) 
 	{
 		numQuestions = numQ;
 		normal = normalIn;
 		raw = null;
 	}
-
+	
 	// Updates the normalized list to match the current raw list.
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(Entry<Character, Integer> entry : normal.entrySet()) 
+		{
+			sb.append(entry.getKey().toString() + " || " + entry.getValue() +"\n");
+		}
+		
+		return sb.toString();
+	}
+	
+	public String toStringForFile()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(numberNormalized());
+		for(Entry<Character, Integer> entry : normal.entrySet()) 
+		{
+			sb.append("\r\n" + entry.getKey().hashCode() + " " + entry.getValue());
+		}
+
+		return sb.toString();
+	}
+	
+	
 	public void normalizeMap()
 	{
 		int minHash=0;
@@ -95,26 +134,14 @@ public class Spectrum {
 			return normal.get(c);
 	}
 	
-	public boolean equals(Spectrum s)
+	public boolean equals(Object o)
 	{
-		return normal.keySet().equals(s.normal.keySet());
+		if(o==null || !(o instanceof Spectrum))
+			return false;
+		else
+			return ((Spectrum) o).normal.keySet().equals(normal.keySet());
 		
-/*		if(normal.size()==s.normal.size())
-		{
-			for(Character key : normal.keySet())
-			{
-				if(!s.normal.containsKey(key))
-				{
-					System.out.println("what the hey");
-					return false;
-				}
-			}
-			System.out.println("whats goin on");
-			return true;
-		}
-		System.out.println("wrong size");
-		return false;
-*/	}
+	}
 	
 	//
 	//
@@ -270,5 +297,14 @@ public class Spectrum {
 		missing.printSpectrum();
 		
 		
+	}
+	public int numPaths()
+	{
+		int n = 0;
+		for(Character key : normal.keySet())
+		{
+			n += normal.get(key);
+		}
+		return n;
 	}
 }

@@ -4,11 +4,12 @@ import java.io.*;
 import java.util.Map.Entry;
 
 public class GraphDriver {
-	public static int minimum=14;
-	public static int maximum=0;
+	public static int minimum=15;
+	public static int maximum=-1;
 	public static int count=0;
 	public static int exception=0;
 	public static PrintStream writeToFile;
+	public static DataOutputStream writebyte;
 	public static PrintStream forbiddenGraphs;
 	public static Scanner sc;
 	public static final int TO_REMOVE = 4;
@@ -17,22 +18,94 @@ public class GraphDriver {
 	 * 
 	 * takes in a input file representing a graph and determines all possible characters
 	 */
-	public static void main(String[] args) throws FileNotFoundException {
-		/*Graph g = new Graph(3, true);
-		g.removeEdge(0b000, 0b011);
-		g.removeEdge(0b001, 0b010);
-		g.removeEdge(0b100, 0b111);
-		g.removeEdge(0b101, 0b110);
-		g.findPath();
-		g.getSpectrum().compareWith(complete.getSpectrum());
-		complete.getSpectrum().compareWith(g.getSpectrum());
-		
-	*/
-		classifyUniques(5);
-		
-		
+	public static void main(String[] args) throws IOException {
+		bruteForceAdd(8);
+//		spectraToFile(11);
+//		spectraFromFile(7);
 		String timeStamp = new SimpleDateFormat("MM dd, yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+		System.out.println("===");
 		System.out.println(timeStamp);
+	}
+	
+	public static void testData() throws IOException
+	{
+		
+        DataOutputStream out = new DataOutputStream(new FileOutputStream("test.txt"));
+        Graph g = new Graph("testGraph.txt");
+        g.toFile(out);
+        out.close();
+        DataInputStream d = new DataInputStream(new FileInputStream("test.txt"));
+        Graph copy = new Graph(3,d);
+        copy.printArray();
+	}
+	
+	public static void spectraToFile(int k)
+	{
+		File in = new File(k + "edgesPartialSpectrum.txt");
+		try {
+			sc = new Scanner(in);
+			PrintWriter writeFile = new PrintWriter(new File(k + "edgeSpectrums.txt"));
+			while(sc.hasNext())
+			{
+				Graph g = new Graph(sc);
+				g.findPath();
+				writeFile.println(g.getSpectrum().toStringForFile());
+			}
+			writeFile.close();
+		} catch (FileNotFoundException e) {
+		
+			e.printStackTrace();
+		} finally {
+			if(sc!=null)
+				sc.close();
+		}
+	}
+	
+	public static void spectraFromFile(int k)
+	{
+		Spectrum max = null;
+		double minPercent = 100;
+		Character c = new Character(3, 129);
+		File in = new File(k + "edgeSpectrums.txt");
+		try{
+			sc = new Scanner(in);
+			while(sc.hasNext())
+			{
+				Spectrum s = new Spectrum(3, sc);
+				if(s.contains(c))
+				{
+					double theCount = (double) s.getCount(c);
+					double total = (double) s.numPaths();
+					double percent = 100.0*theCount/total;
+					if(percent < minPercent)
+					{
+						minPercent = percent;
+						max = s;
+					}
+					count++;
+				}
+				else
+				{
+					spectrumSize[s.numberNormalized()]++;
+					exception++;
+				}
+				
+			}	
+			System.out.println("For graphs with " + k + " edges:");
+			System.out.println(count + " graphs with " + c);
+			System.out.println(exception + " graphs without " + c);
+			System.out.println("lowest percentage of " + c + ": " + minPercent + "%");
+			System.out.println(max);
+			System.out.println("character counts among spectra excluding " + c +":");
+			System.out.println(Arrays.toString(spectrumSize));
+			
+			
+		}catch (FileNotFoundException e){
+			e.printStackTrace();
+		}finally{
+			if(sc!=null)
+				sc.close();
+		}
 		
 	}
 	
@@ -494,18 +567,23 @@ public class GraphDriver {
 
 	public static void bruteForceAdd(int toAdd) throws FileNotFoundException
 	{
-		String partial = "edgesPartialSpectrum.txt";
-		String full = "edgesFullSpectrum.txt";
+//		String partial = "edgesPartialSpectrum.txt";
+//		String full = "edgesFullSpectrum.txt";
 		try 
 		{
-			writeToFile = new PrintStream(new File(toAdd+full));
-			forbiddenGraphs = new PrintStream(new File(toAdd+partial));
+	//		writeToFile = new PrintStream(new File(toAdd+full));
+			writebyte = new DataOutputStream(new FileOutputStream(toAdd+"edgesCompressed.txt"));
+			forbiddenGraphs = new PrintStream(new File(toAdd+"edgeSpectrums.txt"));
 			Graph g = new Graph(3,false);
 			bruteForceAdd(g, 0, 0, 0, toAdd);
 			System.out.println(count+" graphs with full spectrum.");
 			System.out.println(exception+" graphs with partial non-empty spectrum.");
-		} catch (FileNotFoundException ex) {
+			writebyte.close();
+		} catch (IOException ex) {
 			ex.printStackTrace();
+		} finally {
+			
+			forbiddenGraphs.close();
 		}
 		
 		System.out.println(Arrays.toString(spectrumSize));
@@ -530,14 +608,12 @@ public class GraphDriver {
 				else
 				{
 					++exception;
-					forbiddenGraphs.println(3);
-					g.printArray(forbiddenGraphs);
+					
+					g.toFile(writebyte);
+					forbiddenGraphs.println(g.getSpectrum().toStringForFile());
 					if(exception%10000==0)
 						System.out.println(exception+" partial so far.");
-					if(mySize==1){
-						g.printArray();
-						System.out.println();
-					}
+					
 				}
 			}
 		}
